@@ -2,6 +2,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
 import { PARTNERS, STATES, PERIODS } from "@/data/constants"
+import { 
+  IndianRupee, 
+  School, 
+  GraduationCap, 
+  Users, 
+  Sparkles, 
+  Package, 
+  BookOpen, 
+  Tv 
+} from "lucide-react"
+import { useMemo } from "react"
 
 interface ProgramGoalsProps {
   partner: string
@@ -24,6 +35,63 @@ interface Metrics {
   samparkTvLedDistributed: number
 }
 
+// Simulated data for different states
+const stateData: Record<string, Metrics> = {
+  "karnataka": {
+    programAnnualBudget: 450000000,
+    noOfSchoolsInState: 28000,
+    noOfSchoolsCoveredInPlan: 18000,
+    noOfStudentsInState: 8400000,
+    noOfStudentsCoveredInPlan: 5400000,
+    noOfSparks: 16200000,
+    noOfKitsDistributed: 54000,
+    noOfTeachersToTrained: 90000,
+    samparkTvLedDistributed: 18000
+  },
+  "maharashtra": {
+    programAnnualBudget: 550000000,
+    noOfSchoolsInState: 32000,
+    noOfSchoolsCoveredInPlan: 22000,
+    noOfStudentsInState: 9600000,
+    noOfStudentsCoveredInPlan: 6600000,
+    noOfSparks: 19800000,
+    noOfKitsDistributed: 66000,
+    noOfTeachersToTrained: 110000,
+    samparkTvLedDistributed: 22000
+  },
+  "tamil-nadu": {
+    programAnnualBudget: 400000000,
+    noOfSchoolsInState: 25000,
+    noOfSchoolsCoveredInPlan: 15000,
+    noOfStudentsInState: 7500000,
+    noOfStudentsCoveredInPlan: 4500000,
+    noOfSparks: 13500000,
+    noOfKitsDistributed: 45000,
+    noOfTeachersToTrained: 75000,
+    samparkTvLedDistributed: 15000
+  },
+  "telangana": {
+    programAnnualBudget: 350000000,
+    noOfSchoolsInState: 22000,
+    noOfSchoolsCoveredInPlan: 12000,
+    noOfStudentsInState: 6600000,
+    noOfStudentsCoveredInPlan: 3600000,
+    noOfSparks: 10800000,
+    noOfKitsDistributed: 36000,
+    noOfTeachersToTrained: 60000,
+    samparkTvLedDistributed: 12000
+  }
+}
+
+// Period multipliers to simulate different time periods
+const periodMultipliers: Record<string, number> = {
+  "q1": 0.25,  // Q1 only
+  "q2": 0.5,   // Q1 + Q2
+  "q3": 0.75,  // Q1 + Q2 + Q3
+  "q4": 1,     // Q1 + Q2 + Q3 + Q4
+  "fy": 1      // Full year (same as Q4)
+}
+
 export function ProgramGoals({
   partner,
   state,
@@ -32,17 +100,39 @@ export function ProgramGoals({
   setState,
   setPeriod,
 }: ProgramGoalsProps) {
-  const metrics: Metrics = {
-    programAnnualBudget: 500000000,
-    noOfSchoolsInState: 25000,
-    noOfSchoolsCoveredInPlan: 15000,
-    noOfStudentsInState: 7500000,
-    noOfStudentsCoveredInPlan: 4500000,
-    noOfSparks: 15000000,
-    noOfKitsDistributed: 45000,
-    noOfTeachersToTrained: 75000,
-    samparkTvLedDistributed: 20000
-  };
+  const metrics = useMemo(() => {
+    const baseMetrics = stateData[state] || stateData["karnataka"]
+    const multiplier = periodMultipliers[period] || 1
+
+    // Calculate the target numbers for the selected period
+    const getPeriodTarget = (baseNumber: number) => {
+      switch (period) {
+        case "q1":
+          return Math.round(baseNumber * 0.25)
+        case "q2":
+          return Math.round(baseNumber * 0.5)
+        case "q3":
+          return Math.round(baseNumber * 0.75)
+        case "q4":
+        case "fy":
+          return baseNumber
+        default:
+          return baseNumber
+      }
+    }
+
+    return {
+      programAnnualBudget: baseMetrics.programAnnualBudget,
+      noOfSchoolsInState: baseMetrics.noOfSchoolsInState,
+      noOfSchoolsCoveredInPlan: getPeriodTarget(baseMetrics.noOfSchoolsCoveredInPlan),
+      noOfStudentsInState: baseMetrics.noOfStudentsInState,
+      noOfStudentsCoveredInPlan: getPeriodTarget(baseMetrics.noOfStudentsCoveredInPlan),
+      noOfSparks: getPeriodTarget(baseMetrics.noOfSparks),
+      noOfKitsDistributed: getPeriodTarget(baseMetrics.noOfKitsDistributed),
+      noOfTeachersToTrained: getPeriodTarget(baseMetrics.noOfTeachersToTrained),
+      samparkTvLedDistributed: getPeriodTarget(baseMetrics.samparkTvLedDistributed)
+    }
+  }, [state, period])
 
   return (
     <div className="space-y-6">
@@ -103,86 +193,110 @@ export function ProgramGoals({
         <Card className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="space-y-2">
-              <p className="text-gray-600 text-sm">Total Budget</p>
+              <div className="flex items-center gap-2">
+                <IndianRupee className="h-5 w-5 text-orange-500" />
+                <p className="text-gray-600 text-sm">Program Annual Budget</p>
+              </div>
               <p className="text-2xl font-semibold text-orange-500">₹{metrics.programAnnualBudget.toLocaleString()}</p>
-              <p className="text-gray-500 text-sm">All Periods</p>
+              <p className="text-gray-500 text-sm">Annual</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Schools in State Card */}
+        {/* No of Schools in State Card */}
         <Card className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="space-y-2">
-              <p className="text-gray-600 text-sm">Total Schools</p>
+              <div className="flex items-center gap-2">
+                <School className="h-5 w-5 text-orange-500" />
+                <p className="text-gray-600 text-sm">No of Schools in State</p>
+              </div>
               <p className="text-2xl font-semibold text-orange-500">{metrics.noOfSchoolsInState.toLocaleString()}</p>
-              <p className="text-gray-500 text-sm">All Periods</p>
+              <p className="text-gray-500 text-sm">Total</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Schools Covered in Plan Card */}
+        {/* No of Schools covered in plan Card */}
         <Card className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="space-y-2">
-              <p className="text-gray-600 text-sm">Schools Covered</p>
+              <div className="flex items-center gap-2">
+                <School className="h-5 w-5 text-orange-500" />
+                <p className="text-gray-600 text-sm">No of Schools covered in plan</p>
+              </div>
               <p className="text-2xl font-semibold text-orange-500">{metrics.noOfSchoolsCoveredInPlan.toLocaleString()}</p>
-              <p className="text-gray-500 text-sm">All Periods</p>
+              <p className="text-gray-500 text-sm">{period.toUpperCase()}</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Students in State Card */}
+        {/* No of Students in State Card */}
         <Card className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="space-y-2">
-              <p className="text-gray-600 text-sm">Total Students</p>
+              <div className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-orange-500" />
+                <p className="text-gray-600 text-sm">No of Students in State</p>
+              </div>
               <p className="text-2xl font-semibold text-orange-500">{metrics.noOfStudentsInState.toLocaleString()}</p>
-              <p className="text-gray-500 text-sm">All Periods</p>
+              <p className="text-gray-500 text-sm">Total</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Students Covered in Plan Card */}
+        {/* No of Students covered in plan Card */}
         <Card className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="space-y-2">
-              <p className="text-gray-600 text-sm">Students Covered</p>
+              <div className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-orange-500" />
+                <p className="text-gray-600 text-sm">No of Students covered in plan</p>
+              </div>
               <p className="text-2xl font-semibold text-orange-500">{metrics.noOfStudentsCoveredInPlan.toLocaleString()}</p>
-              <p className="text-gray-500 text-sm">All Periods</p>
+              <p className="text-gray-500 text-sm">{period.toUpperCase()}</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Sparks Card */}
+        {/* No of Sparks Card */}
         <Card className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="space-y-2">
-              <p className="text-gray-600 text-sm">Total Sparks</p>
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-orange-500" />
+                <p className="text-gray-600 text-sm">No of Sparks</p>
+              </div>
               <p className="text-2xl font-semibold text-orange-500">{metrics.noOfSparks.toLocaleString()}</p>
-              <p className="text-gray-500 text-sm">All Periods</p>
+              <p className="text-gray-500 text-sm">{period.toUpperCase()}</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Kits Distributed Card */}
+        {/* No of kits Distributed Card */}
         <Card className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="space-y-2">
-              <p className="text-gray-600 text-sm">Kits Distributed</p>
+              <div className="flex items-center gap-2">
+                <Package className="h-5 w-5 text-orange-500" />
+                <p className="text-gray-600 text-sm">No of kits Distributed</p>
+              </div>
               <p className="text-2xl font-semibold text-orange-500">{metrics.noOfKitsDistributed.toLocaleString()}</p>
-              <p className="text-gray-500 text-sm">All Periods</p>
+              <p className="text-gray-500 text-sm">{period.toUpperCase()}</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Teachers to be Trained Card */}
+        {/* No of teachers to be trained Card */}
         <Card className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="space-y-2">
-              <p className="text-gray-600 text-sm">Teachers to Train</p>
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-orange-500" />
+                <p className="text-gray-600 text-sm">No of teachers to be trained</p>
+              </div>
               <p className="text-2xl font-semibold text-orange-500">{metrics.noOfTeachersToTrained.toLocaleString()}</p>
-              <p className="text-gray-500 text-sm">All Periods</p>
+              <p className="text-gray-500 text-sm">{period.toUpperCase()}</p>
             </div>
           </CardContent>
         </Card>
@@ -191,9 +305,12 @@ export function ProgramGoals({
         <Card className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="space-y-2">
-              <p className="text-gray-600 text-sm">TV/LED Distributed</p>
+              <div className="flex items-center gap-2">
+                <Tv className="h-5 w-5 text-orange-500" />
+                <p className="text-gray-600 text-sm">Sampark TV/LED Distributed</p>
+              </div>
               <p className="text-2xl font-semibold text-orange-500">{metrics.samparkTvLedDistributed.toLocaleString()}</p>
-              <p className="text-gray-500 text-sm">All Periods</p>
+              <p className="text-gray-500 text-sm">{period.toUpperCase()}</p>
             </div>
           </CardContent>
         </Card>

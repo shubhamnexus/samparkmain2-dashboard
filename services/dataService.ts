@@ -299,15 +299,15 @@ export function getFilteredData(partner: string, state: string, period: string) 
   const getPeriodFactor = () => {
     if (period === 'all' || period === 'YTD') return 1;
     
-    // Define quarter-wise distribution
+    // Define cumulative quarter-wise distribution
     const quarterDistribution = {
-      Q1: 0.15, // 15% of annual
-      Q2: 0.25, // 25% of annual
-      Q3: 0.35, // 35% of annual
-      Q4: 0.25  // 25% of annual
+      Q1: 0.15,  // Q1 only (15% of annual)
+      Q2: 0.40,  // Q1 + Q2 (40% of annual)
+      Q3: 0.75,  // Q1 + Q2 + Q3 (75% of annual)
+      Q4: 1.00   // Q1 + Q2 + Q3 + Q4 (100% of annual)
     };
 
-    // For specific quarters
+    // For specific quarters, return cumulative percentage
     return quarterDistribution[period as keyof typeof quarterDistribution] || 1;
   };
 
@@ -377,10 +377,10 @@ export function getBudgetData(partner: string, state: string, period: string) {
   
   // Define quarter-wise budget distribution
   const quarterDistribution = {
-    Q1: 0.15, // 15% of annual budget
-    Q2: 0.25, // 25% of annual budget
-    Q3: 0.35, // 35% of annual budget
-    Q4: 0.25  // 25% of annual budget
+    Q1: 0.15, // Q1 only (15% of annual budget)
+    Q2: 0.40, // Q1 + Q2 (40% of annual budget)
+    Q3: 0.75, // Q1 + Q2 + Q3 (75% of annual budget)
+    Q4: 1.00  // Q1 + Q2 + Q3 + Q4 (100% of annual budget)
   };
 
   // Calculate YTD based on current quarter
